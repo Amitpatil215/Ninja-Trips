@@ -52,7 +52,7 @@ class _TripListState extends State<TripList> {
           height: 50.0,
         ),
       ),
-      trailing: Text('\$${trip.price}'),
+      trailing: Text('₹${trip.price}'),
     );
   }
 
