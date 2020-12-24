@@ -9,12 +9,16 @@ class TripList extends StatefulWidget {
 
 class _TripListState extends State<TripList> {
   List<Widget> _tripTiles = [];
-  final GlobalKey _listKey = GlobalKey();
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
     super.initState();
-    _addTrips();
+
+    // Only run this function when build started running
+    WidgetsBinding.instance.addPersistentFrameCallback((timeStamp) {
+      _addTrips();
+    });
   }
 
   void _addTrips() {
@@ -26,8 +30,26 @@ class _TripListState extends State<TripList> {
       Trip(title: 'Space Blast', price: '600', nights: '4', img: 'space.png'),
     ];
 
+    // This future is used for intentionally delaying animation of the each newly
+    // added listTile. By passing Future.Delay() on then cause it wait until duration
+    // completes before adding new listTile,
+    Future _future = Future(() {});
+
     _trips.forEach((Trip trip) {
-      _tripTiles.add(_buildTile(trip));
+      _future = _future.then((_) {
+        return Future.delayed(const Duration(milliseconds: 100), () {
+          _tripTiles.add(_buildTile(trip));
+          // We need to explicitely tell flutter that we added a new tile
+          // so that animation can keep track of every new listTile.
+          // as a index to InsertItem:
+          // lets say first listTile added length will be 1 so, index will be 0
+
+          _listKey.currentState.insertItem(
+            _tripTiles.length - 1,
+            duration: Duration(milliseconds: 500),
+          );
+        });
+      });
     });
   }
 
@@ -59,13 +81,20 @@ class _TripListState extends State<TripList> {
     );
   }
 
+  // Offset(1,0) for list tile means its positin in x asis is completely moved by its width pixels
+  // Offset(0,0) means its origin position
+  Tween<Offset> _offset = Tween(begin: Offset(1, 0), end: Offset(0, 0));
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return AnimatedList(
         key: _listKey,
-        itemCount: _tripTiles.length,
-        itemBuilder: (context, index) {
-          return _tripTiles[index];
+        initialItemCount: _tripTiles.length,
+        itemBuilder: (context, index, animation) {
+          return SlideTransition(
+            position: animation.drive(_offset),
+            child: _tripTiles[index],
+          );
         });
   }
 }
