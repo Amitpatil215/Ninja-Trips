@@ -10,6 +10,7 @@ class ScreenTitle extends StatelessWidget {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
       duration: Duration(seconds: 2),
+      curve: Curves.easeIn,
       builder: (context, value, child) {
         return Opacity(
           opacity: value, // It takes value as a double, provided in tween.
@@ -20,7 +21,7 @@ class ScreenTitle extends StatelessWidget {
           /// Workaround 2:
           // We wanna animate the paddind along with opacity
           child: Padding(
-            padding: EdgeInsets.only(top: value * 20),
+            padding: EdgeInsets.only(top: value * 50),
             child: child, // It automatically looks for child of builder and wrpas it with opacity and padding
           ),
         );
